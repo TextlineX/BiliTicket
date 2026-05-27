@@ -2,6 +2,13 @@
 
 B站抢票工具 Go 语言版本 | 高性能 · 低内存 · 轻量化
 
+## 项目亮点
+
+- 使用 Go + Gin 重构 B 站抢票流程，提供命令行与 Web 管理双入口
+- 支持扫码登录、项目搜索、抢票执行、历史管理等完整功能链路
+- 提供可视化 Web 面板，便于快速配置与运行
+- 支持单文件编译部署，适合轻量化交付与演示
+
 ## 目录
 
 - [项目简介](#项目简介)
@@ -79,12 +86,10 @@ go build -ldflags="-s -w" -o gobiticket.exe ./cmd
 # 抢票
 ./gobiticket.exe buy --area-id <ID> --schedule-id <ID> --item-id <ID>
 ```
-./gobiticket buy --area-id 123 --schedule-id 456 --item-id 789
-```
 
 ### 5. 访问
 
-打开浏览器访问: **http://localhost:8080**
+打开浏览器访问程序日志中提示的地址，默认端口为 **http://localhost:8080**，若端口被占用会自动递增切换。
 
 ---
 
@@ -298,6 +303,11 @@ export HTTPS_PROXY="http://127.0.0.1:7890"
 ```
 
 ### 命令行帮助
+
+```bash
+go run ./cmd --help
+go run ./cmd web -p 8080
+```
 
 ```bash
 ./gobiticket --help
