@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Go 性能展示 - 轻量 · 高效</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(34, 197, 94, 0.6); }
+        }
+        .glow-card { animation: pulse-glow 2s ease-in-out infinite; }
+
+        .gradient-text {
+            background: linear-gradient(90deg, #22c55e, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .metric-card {
+            transition: all 0.3s ease;
+        }
+        .metric-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .vs-badge {
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Header -->
+    <header class="bg-gray-800/50 backdrop-blur border-b border-gray-700">
+        <div class="max-w-7xl mx-auto px-6 py-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold gradient-text">Go 语言性能展示</h1>
+                    <p class="text-gray-400 mt-1">轻量级 · 高并发 · 低内存</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm">
+                        <span class="inline-block w-2 h-2 bg-green-400 rounded-full mr-1 animate-pulse"></span>
+                        服务运行中
+                    </span>
+                    <span id="uptime" class="text-gray-400 text-sm">运行时长: 0s</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        <!-- 核心优势 -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <span class="text-green-400 mr-2">⚡</span>
+                Go 语言核心优势
+            </h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="metric-card bg-gradient-to-br from-green-900/50 to-green-800/20 rounded-2xl p-6 border border-green-700/30 glow-card">
+                    <div class="text-5xl font-bold text-green-400 mb-2">~2MB</div>
+                    <div class="text-lg text-gray-300">内存占用</div>
+                    <div class="text-sm text-gray-500 mt-2">Node.js: 50-100MB | Python: 30-50MB</div>
+                </div>
+                <div class="metric-card bg-gradient-to-br from-blue-900/50 to-blue-800/20 rounded-2xl p-6 border border-blue-700/30">
+                    <div class="text-5xl font-bold text-blue-400 mb-2">100K+</div>
+                    <div class="text-lg text-gray-300">QPS 处理能力</div>
+                    <div class="text-sm text-gray-500 mt-2">单实例可处理</div>
+                </div>
+                <div class="metric-card bg-gradient-to-br from-purple-900/50 to-purple-800/20 rounded-2xl p-6 border border-purple-700/30">
+                    <div class="text-5xl font-bold text-purple-400 mb-2">&lt;1ms</div>
+                    <div class="text-lg text-gray-300">平均响应延迟</div>
+                    <div class="text-sm text-gray-500 mt-2">极致的响应速度</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 实时指标 -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <span class="text-blue-400 mr-2">📊</span>
+                实时性能指标
+            </h2>
+            <div class="grid md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <div class="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+                    <div class="text-gray-400 text-sm mb-1">Goroutines</div>
+                    <div id="goroutines" class="text-2xl font-bold text-yellow-400">0</div>
+                </div>
+                <div class="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+                    <div class="text-gray-400 text-sm mb-1">内存占用</div>
+                    <div id="memory" class="text-2xl font-bold text-cyan-400">0 MB</div>
+                </div>
+                <div class="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+                    <div class="text-gray-400 text-sm mb-1">Heap Objects</div>
+                    <div id="heap" class="text-2xl font-bold text-pink-400">0</div>
+                </div>
+                <div class="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+                    <div class="text-gray-400 text-sm mb-1">QPS</div>
+                    <div id="qps" class="text-2xl font-bold text-green-400">0</div>
+                </div>
+                <div class="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+                    <div class="text-gray-400 text-sm mb-1">总请求数</div>
+                    <div id="requests" class="text-2xl font-bold text-orange-400">0</div>
+                </div>
+                <div class="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+                    <div class="text-gray-400 text-sm mb-1">CPU 核心</div>
+                    <div id="cpu" class="text-2xl font-bold text-indigo-400">0</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 对比测试 -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <span class="text-purple-400 mr-2">🔬</span>
+                性能对比测试
+            </h2>
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Ping 测试 -->
+                <div class="bg-gray-800/50 rounded-2xl p-6 border border-gray-700">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold">🚀 Ping 延迟测试</h3>
+                        <button onclick="ping()" class="px-4 py-2 bg-green-600 hover:bg-green-500 rounded-lg text-sm font-medium transition">
+                            执行测试
+                        </button>
+                    </div>
+                    <div id="ping-result" class="font-mono text-sm bg-gray-900 rounded-lg p-4 h-40 overflow-auto">
+                        <span class="text-gray-500">点击按钮开始测试...</span>
+                    </div>
+                </div>
+
+                <!-- 计算测试 -->
+                <div class="bg-gray-800/50 rounded-2xl p-6 border border-gray-700">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold">⚡ 计算性能测试 (1M 次循环)</h3>
+                        <button onclick="benchmark()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-medium transition">
+                            执行测试
+                        </button>
+                    </div>
+                    <div id="benchmark-result" class="font-mono text-sm bg-gray-900 rounded-lg p-4 h-40 overflow-auto">
+                        <span class="text-gray-500">点击按钮开始测试...</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 内存对比 -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <span class="text-orange-400 mr-2">💾</span>
+                内存占用对比
+            </h2>
+            <div class="bg-gray-800/50 rounded-2xl p-6 border border-gray-700">
+                <div class="space-y-6">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-medium">Go</span>
+                            <span class="text-green-400 font-bold">~2-5 MB</span>
+                        </div>
+                        <div class="h-4 bg-gray-700 rounded-full overflow-hidden">
+                            <div class="h-full bg-green-500 rounded-full" style="width: 5%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-medium">Rust</span>
+                            <span class="text-blue-400 font-bold">~3-6 MB</span>
+                        </div>
+                        <div class="h-4 bg-gray-700 rounded-full overflow-hidden">
+                            <div class="h-full bg-blue-500 rounded-full" style="width: 8%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-medium">Node.js</span>
+                            <span class="text-yellow-400 font-bold">~50-100 MB</span>
+                        </div>
+                        <div class="h-4 bg-gray-700 rounded-full overflow-hidden">
+                            <div class="h-full bg-yellow-500 rounded-full" style="width: 70%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-medium">Python</span>
+                            <span class="text-orange-400 font-bold">~30-50 MB</span>
+                        </div>
+                        <div class="h-4 bg-gray-700 rounded-full overflow-hidden">
+                            <div class="h-full bg-orange-500 rounded-full" style="width: 50%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-medium">Java</span>
+                            <span class="text-red-400 font-bold">~100-300 MB</span>
+                        </div>
+                        <div class="h-4 bg-gray-700 rounded-full overflow-hidden">
+                            <div class="h-full bg-red-500 rounded-full" style="width: 95%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 为什么选择 Go -->
+        <section>
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <span class="text-green-400 mr-2">✨</span>
+                为什么选择 Go
+            </h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-gray-800/50 rounded-xl p-5 border border-gray-700">
+                    <div class="text-3xl mb-3">🎯</div>
+                    <h3 class="font-semibold mb-2">简单易学</h3>
+                    <p class="text-sm text-gray-400">语法简洁，25个关键字，一周上手</p>
+                </div>
+                <div class="bg-gray-800/50 rounded-xl p-5 border border-gray-700">
+                    <div class="text-3xl mb-3">🚀</div>
+                    <h3 class="font-semibold mb-2">编译快速</h3>
+                    <p class="text-sm text-gray-400">秒级编译，无需运行时</p>
+                </div>
+                <div class="bg-gray-800/50 rounded-xl p-5 border border-gray-700">
+                    <div class="text-3xl mb-3">🔄</div>
+                    <h3 class="font-semibold mb-2">并发支持</h3>
+                    <p class="text-sm text-gray-400">goroutine + channel，轻松处理高并发</p>
+                </div>
+                <div class="bg-gray-800/50 rounded-xl p-5 border border-gray-700">
+                    <div class="text-3xl mb-3">📦</div>
+                    <h3 class="font-semibold mb-2">静态编译</h3>
+                    <p class="text-sm text-gray-400">单个可执行文件，部署极简</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-800/50 border-t border-gray-700 py-6 mt-12">
+        <div class="max-w-7xl mx-auto px-6 text-center text-gray-400 text-sm">
+            <p>Powered by <span class="text-green-400 font-medium">Go + Gin</span> | 轻量 · 高效 · 低内存</p>
+        </div>
+    </footer>
+
+    <script>
+        // 更新指标
+        async function updateMetrics() {
+            try {
+                const res = await fetch('/api/metrics');
+                const data = await res.json();
+
+                document.getElementById('goroutines').textContent = data.num_goroutine;
+                document.getElementById('memory').textContent = data.memory_alloc;
+                document.getElementById('heap').textContent = data.heap_objects.toLocaleString();
+                document.getElementById('qps').textContent = data.qps.toFixed(1);
+                document.getElementById('requests').textContent = data.requests.toLocaleString();
+                document.getElementById('uptime').textContent = `运行时长: ${data.uptime}`;
+            } catch (e) {
+                console.error('获取指标失败:', e);
+            }
+        }
+
+        // Ping 测试
+        async function ping() {
+            const result = document.getElementById('ping-result');
+            result.innerHTML = '<span class="text-yellow-400">测试中...</span>';
+
+            const times = [];
+            for (let i = 0; i < 10; i++) {
+                const start = performance.now();
+                await fetch('/api/ping');
+                const end = performance.now();
+                times.push((end - start).toFixed(2));
+            }
+
+            const avg = (times.reduce((a, b) => parseFloat(a) + parseFloat(b), 0) / times.length).toFixed(2);
+            const min = Math.min(...times.map(parseFloat)).toFixed(2);
+            const max = Math.max(...times.map(parseFloat)).toFixed(2);
+
+            result.innerHTML = `
+                <span class="text-green-400">✓ 10次请求测试完成</span>\n\n
+                耗时详情:\n${times.map((t, i) => `  请求 ${i+1}: ${t} ms`).join('\n')}\n\n
+                <span class="text-cyan-400">平均延迟: ${avg} ms</span>\n
+                <span class="text-yellow-400">最小延迟: ${min} ms</span>\n
+                <span class="text-orange-400">最大延迟: ${max} ms</span>
+            `;
+        }
+
+        // Benchmark 测试
+        async function benchmark() {
+            const result = document.getElementById('benchmark-result');
+            result.innerHTML = '<span class="text-yellow-400">计算中...</span>';
+
+            try {
+                const res = await fetch('/api/benchmark');
+                const data = await res.json();
+
+                result.innerHTML = `
+                    <span class="text-green-400">✓ 计算完成</span>\n\n
+                    <span class="text-cyan-400">运算量: 1,000,000 次循环</span>\n
+                    <span class="text-yellow-400">耗时: ${data.time_us} 微秒</span>\n
+                    <span class="text-orange-400">       (${data.time_ms} 毫秒)</span>\n\n
+                    <span class="text-pink-400">Goroutines: ${data.goroutines}</span>\n
+                    <span class="text-purple-400">内存占用: ${data.memory_alloc}</span>\n\n
+                    <span class="text-gray-400">结果: ${data.result.toLocaleString()}</span>
+                `;
+            } catch (e) {
+                result.innerHTML = `<span class="text-red-400">测试失败: ${e.message}</span>`;
+            }
+        }
+
+        // 每秒更新指标
+        updateMetrics();
+        setInterval(updateMetrics, 1000);
+    </script>
+</body>
+</html>

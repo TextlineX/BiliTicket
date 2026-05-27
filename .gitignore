@@ -1,0 +1,20 @@
+# Build outputs
+/build/
+/dashboard.exe
+/*.exe
+/*.exe~
+
+# Go caches and temp files
+/.gocache/
+*.test
+*.out
+*.log
+
+# IDE / local config
+/.idea/
+/.vscode/
+/.claude/
+
+# OS junk
+.DS_Store
+Thumbs.db
